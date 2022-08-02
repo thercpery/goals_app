@@ -15,6 +15,7 @@ python-multipart = "*"
 SQLAlchemy = "*"
 psycopg2 = "*"
 passlib = "*"
+pyjwt = "*"
 
 [dev-packages]
 
