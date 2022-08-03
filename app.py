@@ -116,3 +116,29 @@ async def view_all_goals_from_user(
         db: _orm.Session = Depends(_db.get_db)
 ):
     return await _Goal_service.view_all_goals_from_user(db=db, user=user)
+
+
+@app.get("/api/goals/{goal_id}", response_model=_Goal_schema.Goal)
+async def view_goal_by_id(
+        goal_id: int,
+        user: _User_schema.User = Depends(_User_service.get_current_user),
+        db: _orm.Session = Depends(_db.get_db)
+):
+    goal = await _Goal_service.view_goal_by_id(db=db, goal_id=goal_id, user=user)
+
+    if not goal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found.")
+
+    return goal
+
+
+@app.patch("/api/goals/{goal_id}", response_model=_Goal_schema.Goal)
+async def update_goal(
+        goal_id: int,
+        goal_data: _Goal_schema.GoalCreate,
+        user: _User_schema.User = Depends(_User_service.get_current_user),
+        db: _orm.Session = Depends(_db.get_db)
+):
+    pass
