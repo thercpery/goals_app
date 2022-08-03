@@ -90,6 +90,24 @@ async def change_password(
     }
 
 
+@app.patch("/api/users/change-username", response_model=_User_schema.User)
+async def change_username(
+        user_data: _User_schema.ChangeUsername,
+        user: _User_schema.User = Depends(_User_service.get_current_user),
+        db: _orm.Session = Depends(_db.get_db)
+):
+    is_username_exist = await _User_service.verify_username(db=db, username=user_data.username)
+
+    if is_username_exist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Username is taken. Please enter different credentials.")
+
+    db_user = await _User_service.get_user_by_username(db=db, username=user.username)
+
+    return await _User_service.change_username(db=db, new_username_data=user_data, user_model=db_user)
+
+
 @app.get("/api/users", response_model=_User_schema.User)
 async def get_user(
         user: _User_schema.User = Depends(_User_service.get_current_user)):

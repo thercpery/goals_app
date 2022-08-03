@@ -18,6 +18,10 @@ class ChangePassword(_pydantic.BaseModel):
     new_password: str
 
 
+class ChangeUsername(_pydantic.BaseModel):
+    username: str
+
+
 class User(_UserBase):
     id: int
     date_created: _dt
