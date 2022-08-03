@@ -39,3 +39,7 @@ async def view_goal_by_id(
     goal = db.query(_Goal_model.GoalModel).filter_by(id=goal_id, user_id=user.id).first()
 
     return goal
+
+
+async def update_goal():
+    pass

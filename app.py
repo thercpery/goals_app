@@ -1,10 +1,7 @@
-from typing import TYPE_CHECKING, List
+from typing import List
 from fastapi import FastAPI, Depends, HTTPException, status
 import fastapi.security as _security
 import sqlalchemy.orm as _orm
-
-if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
 
 from schemas import User as _User_schema
 from schemas import Goal as _Goal_schema
