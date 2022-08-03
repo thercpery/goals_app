@@ -99,3 +99,13 @@ async def get_current_user(db: _orm.Session = Depends(_db.get_db), token: str = 
 
     return _User_schemas.User.from_orm(user)
 
+
+async def change_password(
+        db: _orm.Session,
+        new_pass_data: _User_schemas.ChangePassword,
+        user_model: _User_model.UserModel,
+):
+    hash_password = _hash.bcrypt.hash(new_pass_data.new_password)
+    user_model.password = hash_password
+
+    _db.commit_to_db(db=db, model=user_model)

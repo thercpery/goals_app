@@ -13,6 +13,11 @@ class UserCreate(_UserBase):
     password: str
 
 
+class ChangePassword(_pydantic.BaseModel):
+    password: str
+    new_password: str
+
+
 class User(_UserBase):
     id: int
     date_created: _dt

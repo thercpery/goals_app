@@ -68,6 +68,31 @@ async def user_login(
     return await _User_service.create_token(user=user)
 
 
+@app.patch("/api/users/change-password")
+async def change_password(
+        new_pass_data: _User_schema.ChangePassword,
+        user: _User_schema.User = Depends(_User_service.get_current_user),
+        db: _orm.Session = Depends(_db.get_db)):
+    # Authenticate user
+    db_user = await _User_service.authenticate_user(
+        db=db,
+        username=user.username,
+        password=new_pass_data.password)
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials.")
+
+    # Change password
+    await _User_service.change_password(db=db, new_pass_data=new_pass_data, user_model=db_user)
+
+    # Return something.
+    return {
+        "message": "Your password has been changed."
+    }
+
+
 @app.get("/api/users", response_model=_User_schema.User)
 async def get_user(
         user: _User_schema.User = Depends(_User_service.get_current_user)):
