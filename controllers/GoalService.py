@@ -35,11 +35,21 @@ async def view_goal_by_id(
         db: _orm.Session,
         goal_id: int,
         user: _User_schema.User
-) -> _Goal_schema.Goal:
+):
     goal = db.query(_Goal_model.GoalModel).filter_by(id=goal_id, user_id=user.id).first()
 
     return goal
 
 
-async def update_goal():
-    pass
+async def update_goal(
+        db: _orm.Session,
+        new_goal_data: _Goal_schema.GoalCreate,
+        goal_model: _Goal_model.GoalModel
+) -> _Goal_schema.Goal:
+    goal_model.title = new_goal_data.title
+    goal_model.description = new_goal_data.description
+    goal_model.priority = new_goal_data.priority
+
+    _db.commit_to_db(db=db, model=goal_model)
+
+    return _Goal_schema.Goal.from_orm(goal_model)

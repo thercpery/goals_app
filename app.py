@@ -111,7 +111,6 @@ async def change_username(
 @app.get("/api/users", response_model=_User_schema.User)
 async def get_user(
         user: _User_schema.User = Depends(_User_service.get_current_user)):
-    print(f"user: {user}")
     return user
 
 
@@ -149,11 +148,19 @@ async def view_goal_by_id(
     return goal
 
 
-@app.patch("/api/goals/{goal_id}", response_model=_Goal_schema.Goal)
+@app.put("/api/goals/{goal_id}", response_model=_Goal_schema.Goal)
 async def update_goal(
         goal_id: int,
         goal_data: _Goal_schema.GoalCreate,
         user: _User_schema.User = Depends(_User_service.get_current_user),
         db: _orm.Session = Depends(_db.get_db)
 ):
-    pass
+    db_goal = await _Goal_service.view_goal_by_id(db=db, goal_id=goal_id, user=user)
+
+    if not db_goal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found.")
+
+    return await _Goal_service.update_goal(db=db, new_goal_data=goal_data, goal_model=db_goal)
+
