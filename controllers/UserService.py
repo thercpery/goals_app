@@ -1,8 +1,5 @@
-from typing import TYPE_CHECKING
 import sqlalchemy.orm as _orm
-if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
-
+from fastapi import Depends, HTTPException, status
 import email_validator as _email_check
 import passlib.hash as _hash
 import fastapi.security as _security
@@ -17,10 +14,10 @@ from schemas import User as _User_schemas
 
 load_dotenv(".env")
 JWT_SECRET_KEY = _os.environ.get("JWT_SECRET_KEY")
-oauth2schema =_security.OAuth2PasswordBearer("/api/users/login")
+oauth2schema = _security.OAuth2PasswordBearer("/api/users/login")
 
 
-def check_for_duplicates(db: "Session", username: str, email: str) -> bool:
+def check_for_duplicates(db: _orm.Session, username: str, email: str) -> bool:
     db_email = db.query(_User_model.UserModel).filter(_User_model.UserModel.email == email).first()
     db_username = db.query(_User_model.UserModel).filter(_User_model.UserModel.username == username).first()
 
@@ -38,7 +35,7 @@ def is_email_valid(email: str) -> bool:
         return False
 
 
-async def verify_email(db: "Session", email: str) -> bool:
+async def verify_email(db: _orm.Session, email: str) -> bool:
     db_user = db.query(_User_model.UserModel).filter(_User_model.UserModel.email == email).first()
 
     if not db_user:
@@ -46,7 +43,7 @@ async def verify_email(db: "Session", email: str) -> bool:
     return True
 
 
-async def verify_username(db: "Session", username: str) -> bool:
+async def verify_username(db: _orm.Session, username: str) -> bool:
     db_user = db.query(_User_model.UserModel).filter(_User_model.UserModel.username == username).first()
 
     if not db_user:
@@ -54,12 +51,12 @@ async def verify_username(db: "Session", username: str) -> bool:
     return True
 
 
-async def get_user_by_username(db: "Session", username: str):
+async def get_user_by_username(db: _orm.Session, username: str):
     return db.query(_User_model.UserModel).filter(_User_model.UserModel.username == username).first()
 
 
 # Put all callback functions associated with routes ("/api/users") here.
-async def register_user(db: "Session", user: _User_schemas.UserCreate) -> _User_schemas.User:
+async def register_user(db: _orm.Session, user: _User_schemas.UserCreate) -> _User_schemas.User:
     hash_password = _hash.bcrypt.hash(user.password)
     user_obj = _User_model.UserModel(username=user.username, email=user.email, password=hash_password)
 
@@ -67,7 +64,7 @@ async def register_user(db: "Session", user: _User_schemas.UserCreate) -> _User_
     return user_obj
 
 
-async def authenticate_user(db: "Session", username: str, password: str):
+async def authenticate_user(db: _orm.Session, username: str, password: str):
     user = await get_user_by_username(db=db, username=username)
 
     if not user:
@@ -83,8 +80,22 @@ async def create_token(user: _User_model.UserModel) -> dict:
     user_dict = user_schema_obj.dict()
     del user_dict["date_created"]
     del user_dict["date_updated"]
+    del user_dict["goals"]
 
     token = _jwt.encode(user_dict, JWT_SECRET_KEY)
 
     return dict(access_token=token, token_type="bearer")
+
+
+async def get_current_user(db: _orm.Session = Depends(_db.get_db), token: str = Depends(oauth2schema)):
+    try:
+        payload = _jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+        user = db.query(_User_model.UserModel).get(payload["id"])
+
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not authorized. Please login first")
+
+    return _User_schemas.User.from_orm(user)
 

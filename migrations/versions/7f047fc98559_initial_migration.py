@@ -7,6 +7,7 @@ Create Date: 2022-08-01 16:33:42.006090
 """
 from alembic import op
 import sqlalchemy as sa
+import sqlalchemy.orm as orm
 from datetime import datetime as _dt
 
 
@@ -27,6 +28,8 @@ def upgrade() -> None:
         sa.Column("is_email_verified", sa.Boolean, default=False),
         sa.Column("date_created", sa.DateTime, default=_dt.utcnow),
         sa.Column("date_updated", sa.DateTime, default=_dt.utcnow),
+
+        orm.relationship("GoalModel", back_populates="user"),
     )
     op.create_table(
         "goals",
@@ -34,11 +37,14 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer, sa.ForeignKey("users.id")),
         sa.Column("title", sa.String(100), index=True, nullable=False),
         sa.Column("description", sa.Text),
+        sa.Column("priority", sa.String(100), nullable=False),
         sa.Column("date_started", sa.DateTime, default=_dt.utcnow),
         sa.Column("date_ended", sa.DateTime),
         sa.Column("is_finished", sa.Boolean, default=False),
         sa.Column("date_created", sa.DateTime, default=_dt.utcnow),
         sa.Column("date_updated", sa.DateTime, default=_dt.utcnow),
+
+        orm.relationship("UserModel", back_populates="goals"),
     )
 
 

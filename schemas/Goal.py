@@ -12,12 +12,15 @@ class GoalCreate(_GoalBase):
     pass
 
 
+class FinishGoal(_GoalBase):
+    date_ended: _dt
+
+
 class Goal(_GoalBase):
     id: int
     user_id: int
     date_started: _dt
     is_finished: bool
-    date_finished: _dt
     date_created: _dt
     date_updated: _dt
 

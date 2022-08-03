@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from fastapi import FastAPI, Depends, HTTPException, status
 import fastapi.security as _security
 import sqlalchemy.orm as _orm
@@ -66,3 +66,28 @@ async def user_login(
             detail="Invalid credentials.")
 
     return await _User_service.create_token(user=user)
+
+
+@app.get("/api/users", response_model=_User_schema.User)
+async def get_user(
+        user: _User_schema.User = Depends(_User_service.get_current_user)):
+    print(f"user: {user}")
+    return user
+
+
+@app.post("/api/goals", response_model=_Goal_schema.Goal)
+async def create_goal(
+        goal: _Goal_schema.GoalCreate,
+        user: _User_schema.User = Depends(_User_service.get_current_user),
+        db: _orm.Session = Depends(_db.get_db)
+):
+    goal = await _Goal_service.create_goal(db=db, user=user, goal=goal)
+    return goal
+
+
+@app.get("/api/goals", response_model=List[_Goal_schema.Goal])
+async def view_all_goals_from_user(
+        user: _User_schema.User = Depends(_User_service.get_current_user),
+        db: _orm.Session = Depends(_db.get_db)
+):
+    return await _Goal_service.view_all_goals_from_user(db=db, user=user)

@@ -12,9 +12,9 @@ class GoalModel(_database.Base):
     description = _sql.Column(_sql.Text)
     priority = _sql.Column(_sql.String(100), nullable=False)
     date_started = _sql.Column(_sql.DateTime, default=_dt.utcnow)
-    date_ended = _sql.Column(_sql.DateTime)
+    date_ended = _sql.Column(_sql.DateTime, nullable=True)
     is_finished = _sql.Column(_sql.Boolean, default=False)
     date_created = _sql.Column(_sql.DateTime, default=_dt.utcnow)
     date_updated = _sql.Column(_sql.DateTime, default=_dt.utcnow)
 
-    owner = _orm.relationship("UserModel", back_populates="users")
+    user = _orm.relationship("UserModel", back_populates="goals")

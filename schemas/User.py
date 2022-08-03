@@ -15,7 +15,6 @@ class UserCreate(_UserBase):
 
 class User(_UserBase):
     id: int
-    is_email_verified: bool
     date_created: _dt
     date_updated: _dt
     goals: List[Goal] = []
