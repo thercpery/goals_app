@@ -1,6 +1,7 @@
 import sqlalchemy.orm as _orm
 import fastapi.security as _security
 from typing import List
+from datetime import datetime as _dt
 
 from controllers import database as _db
 from models import Goal as _Goal_model
@@ -49,7 +50,23 @@ async def update_goal(
     goal_model.title = new_goal_data.title
     goal_model.description = new_goal_data.description
     goal_model.priority = new_goal_data.priority
+    goal_model.date_updated = _dt.now()
 
     _db.commit_to_db(db=db, model=goal_model)
 
     return _Goal_schema.Goal.from_orm(goal_model)
+
+
+async def finish_goal(
+        db: _orm.Session,
+        goal_model: _Goal_model.GoalModel
+) -> _Goal_schema.FinishedGoal:
+    time_now = _dt.now()
+
+    goal_model.is_finished = True
+    goal_model.date_ended = time_now
+    goal_model.date_updated = time_now
+
+    _db.commit_to_db(db=db, model=goal_model)
+
+    return _Goal_schema.FinishedGoal.from_orm(goal_model)

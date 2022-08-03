@@ -12,10 +12,6 @@ class GoalCreate(_GoalBase):
     pass
 
 
-class FinishGoal(_GoalBase):
-    date_ended: _dt
-
-
 class Goal(_GoalBase):
     id: int
     user_id: int
@@ -23,6 +19,13 @@ class Goal(_GoalBase):
     is_finished: bool
     date_created: _dt
     date_updated: _dt
+
+    class Config:
+        orm_mode = True
+
+
+class FinishedGoal(Goal):
+    date_ended: _dt
 
     class Config:
         orm_mode = True
