@@ -1,3 +1,4 @@
+from datetime import datetime as _dt
 import sqlalchemy.orm as _orm
 from fastapi import Depends, HTTPException, status
 import email_validator as _email_check
@@ -107,5 +108,18 @@ async def change_password(
 ):
     hash_password = _hash.bcrypt.hash(new_pass_data.new_password)
     user_model.password = hash_password
+    user_model.date_updated = _dt.now()
 
     _db.commit_to_db(db=db, model=user_model)
+
+
+async def change_username(
+        db: _orm.Session,
+        new_username_data: _User_schemas.ChangeUsername,
+        user_model: _User_model.UserModel
+):
+    user_model.username = new_username_data.username
+    _db.commit_to_db(db=db, model=user_model)
+    user_model.date_updated = _dt.now()
+
+    return _User_schemas.User.from_orm(user_model)
